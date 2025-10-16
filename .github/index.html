@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini-Streaming — Catalogue</title>
+  <meta name="description" content="Catalogue de films — cliquez pour voir la fiche et accéder au lien du film.">
+  <style>
+    :root{
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #9aa4b2;
+      --accent: #ff5c7c;
+      --glass: rgba(255,255,255,0.04);
+      --radius: 14px;
+      --max-width: 1100px;
+      --gutter: 16px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,92,124,0.06), transparent 6%),
+                  linear-gradient(180deg, #051024 0%, #081226 100%);
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:24px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .app{
+      width:100%;
+      max-width:var(--max-width);
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{
+      width:44px;height:44px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),#7b61ff);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:white;
+      box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    }
+    h1{font-size:1.1rem;margin:0}
+    p.sub{margin:0;color:var(--muted);font-size:0.9rem}
+
+    .controls{display:flex;gap:8px;align-items:center}
+    .search{
+      background:var(--glass);border:1px solid rgba(255,255,255,0.03);
+      padding:8px 12px;border-radius:999px;color:var(--muted);
+      display:flex;align-items:center;gap:8px;font-size:0.95rem;
+      min-width:140px;
+    }
+    .toggle{
+      background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:10px;color:var(--muted);
+    }
+
+    /* grid */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:16px;
+    }
+    @media (max-width:900px){ .grid{grid-template-columns: repeat(2, 1fr);} }
+    @media (max-width:520px){ .grid{grid-template-columns: 1fr;} header{flex-direction:column;align-items:flex-start} }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      overflow:hidden;
+      box-shadow: 0 6px 20px rgba(3,8,20,0.6);
+      cursor:pointer;
+      transition:transform .22s ease, box-shadow .22s ease;
+      display:flex;flex-direction:column;
+      min-height:220px;
+    }
+    .card:hover{ transform:translateY(-6px); box-shadow: 0 18px 40px rgba(3,8,20,0.7);}
+
+    .poster{
+      width:100%;
+      aspect-ratio: 2/3;
+      object-fit:cover;
+      display:block;
+      background:linear-gradient(180deg,#111827,#0b1220);
+    }
+    .meta{padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .title{font-weight:600;font-size:0.98rem}
+    .year{font-size:0.85rem;color:var(--muted)}
+
+    /* modal / details */
+    .overlay{
+      position:fixed;inset:0;background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.85));
+      display:flex;align-items:center;justify-content:center;padding:18px;
+      backdrop-filter: blur(6px);
+      z-index:60;
+      opacity:0;pointer-events:none;transition:opacity .22s ease;
+    }
+    .overlay.open{opacity:1;pointer-events:auto}
+    .detail{
+      width:100%;max-width:900px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:18px;padding:16px;display:grid;grid-template-columns: 38% 62%;gap:18px;
+      box-shadow: 0 18px 60px rgba(2,6,23,0.8);
+    }
+    @media (max-width:720px){ .detail{grid-template-columns:1fr;align-items:start;padding:12px;} }
+
+    .detail .poster-lg{width:100%;border-radius:12px;aspect-ratio: 2/3;object-fit:cover}
+    .detail h2{margin:0 0 6px 0}
+    .detail .submeta{color:var(--muted);font-size:0.95rem;margin-bottom:12px}
+    .desc{color:#d4e1f5;line-height:1.45;font-size:0.97rem;margin-bottom:16px}
+    .actions{display:flex;gap:12px;align-items:center}
+    .btn{
+      padding:10px 16px;border-radius:12px;border:0;font-weight:700;cursor:pointer;
+      box-shadow:0 8px 20px rgba(11,18,32,0.6);
+    }
+    .btn-primary{
+      background:linear-gradient(90deg,var(--accent),#7b61ff);
+      color:white;
+    }
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+
+    .close-x{margin-left:auto;background:transparent;border:0;color:var(--muted);font-size:18px;cursor:pointer}
+
+    /* small helper */
+    .tag{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-size:0.85rem;color:var(--muted)}
+    .empty{color:var(--muted);text-align:center;padding:36px;border-radius:12px;background:rgba(255,255,255,0.02)}
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header>
+      <div class="brand">
+        <div class="logo">MS</div>
+        <div>
+          <h1>Mini-Streaming</h1>
+          <p class="sub">Catalogue — clique sur une affiche pour voir la fiche</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <label class="search" title="Recherche">
+          🔎
+          <input id="search" type="search" placeholder="Rechercher un film..." aria-label="Recherche" style="background:transparent;border:0;outline:none;color:inherit;width:120px">
+        </label>
+        <button class="toggle" id="sortBtn" title="Trier">Trier (popularité)</button>
+      </div>
+    </header>
+
+    <main>
+      <div id="grid" class="grid" aria-live="polite"></div>
+      <div id="empty" class="empty" style="display:none;margin-top:12px">Aucun film trouvé.</div>
+    </main>
+  </div>
+
+  <!-- overlay détail -->
+  <div id="overlay" class="overlay" role="dialog" aria-hidden="true">
+    <div class="detail" role="document" aria-labelledby="detail-title">
+      <img id="detail-poster" class="poster-lg" src="" alt="Affiche du film">
+      <div>
+        <button class="close-x" id="closeBtn" aria-label="Fermer">✕</button>
+        <h2 id="detail-title">Titre</h2>
+        <div class="submeta" id="detail-sub">Année • Durée • Genre • Note</div>
+        <p class="desc" id="detail-desc">Description</p>
+        <div class="actions">
+          <a id="watchBtn" class="btn btn-primary" href="#" target="_blank" rel="noopener noreferrer">Voir le film</a>
+          <button id="favBtn" class="btn btn-ghost">♡ Ajouter aux favoris</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Exemple de données — remplace les valeurs "url" par tes liens de streaming
+    const movies = [
+      {
+        id: 'ACS1',
+        title: 'À contre-sens.',
+        year: 2023,
+        duration: '1h42',
+        genre: 'Romance',
+        rating: '7.8',
+        img: './AcontreSens1.jpg', // remplace par ton image
+        desc: "A contre sens raconte l histoire de Eden une jeune femme independante dont la vie bascule lorsqu elle decouvre que le mysterieux Noah qu elle pensait detester cache un passe etroitement lie au sien. Entre secrets attirance et conflits leur relation devient une passion interdite qui les pousse a tout remettre en question.",
+        url: 'https://sharecloudy.com/iframe/Ig1YRirleK' // <-- MODIFIE ICI
+
+      }
+    ];
+
+    const grid = document.getElementById('grid');
+    const overlay = document.getElementById('overlay');
+    const detailTitle = document.getElementById('detail-title');
+    const detailPoster = document.getElementById('detail-poster');
+    const detailDesc = document.getElementById('detail-desc');
+    const detailSub = document.getElementById('detail-sub');
+    const watchBtn = document.getElementById('watchBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const favBtn = document.getElementById('favBtn');
+    const searchInput = document.getElementById('search');
+    const emptyBox = document.getElementById('empty');
+    const sortBtn = document.getElementById('sortBtn');
+
+    let current = null;
+    let sortedByPopularity = false;
+
+    function renderGrid(list){
+      grid.innerHTML = '';
+      if(!list.length){ emptyBox.style.display='block'; return; } else emptyBox.style.display='none';
+
+      list.forEach(m => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
+        card.dataset.id = m.id;
+        card.innerHTML = `
+          <img class="poster" loading="lazy" src="${m.img}" alt="Affiche - ${escapeHTML(m.title)}">
+          <div class="meta">
+            <div>
+              <div class="title">${escapeHTML(m.title)}</div>
+              <div class="year">${m.year} • ${m.genre}</div>
+            </div>
+            <div class="tag">${m.rating}</div>
+          </div>
+        `;
+        card.addEventListener('click', ()=> openDetail(m.id));
+        card.addEventListener('keypress', (e)=> { if(e.key === 'Enter') openDetail(m.id) });
+        grid.appendChild(card);
+      });
+    }
+
+    function openDetail(id){
+      const m = movies.find(x => x.id === id);
+      if(!m) return;
+      current = m;
+      detailTitle.textContent = m.title;
+      detailPoster.src = m.img;
+      detailPoster.alt = 'Affiche de ' + m.title;
+      detailDesc.textContent = m.desc;
+      detailSub.textContent = `${m.year} • ${m.duration} • ${m.genre} • Note ${m.rating}`;
+      watchBtn.href = m.url; // ici, le bouton pointe vers le lien que tu as mis
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden','false');
+      // lock scroll
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetail(){
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+      current = null;
+    }
+
+    // small favorites demo (localStorage)
+    function toggleFav(){
+      if(!current) return;
+      const key = 'ms_favs';
+      const favs = JSON.parse(localStorage.getItem(key) || '[]');
+      const exists = favs.includes(current.id);
+      if(exists){
+        const next = favs.filter(id => id !== current.id);
+        localStorage.setItem(key, JSON.stringify(next));
+        favBtn.textContent = '♡ Ajouter aux favoris';
+      } else {
+        favs.push(current.id);
+        localStorage.setItem(key, JSON.stringify(favs));
+        favBtn.textContent = '♥ Retiré des favoris';
+      }
+      updateFavButton();
+    }
+    function updateFavButton(){
+      if(!current) return;
+      const favs = JSON.parse(localStorage.getItem('ms_favs') || '[]');
+      favBtn.textContent = favs.includes(current.id) ? '♥ Retiré des favoris' : '♡ Ajouter aux favoris';
+    }
+
+    // search
+    searchInput.addEventListener('input', (e)=>{
+      const q = e.target.value.trim().toLowerCase();
+      const result = movies.filter(m => (m.title + ' ' + m.genre + ' ' + m.year).toLowerCase().includes(q));
+      renderGrid(result);
+    });
+
+    // sort demo (toggle)
+    sortBtn.addEventListener('click', ()=>{
+      sortedByPopularity = !sortedByPopularity;
+      if(sortedByPopularity){
+        // tri fictif : inverser l'ordre
+        renderGrid([...movies].sort((a,b)=> b.rating.localeCompare(a.rating)));
+        sortBtn.textContent = 'Trier (alphabétique)';
+      } else {
+        renderGrid(movies);
+        sortBtn.textContent = 'Trier (popularité)';
+      }
+    });
+
+    // close handlers
+    closeBtn.addEventListener('click', closeDetail);
+    overlay.addEventListener('click', (e)=>{
+      if(e.target === overlay) closeDetail();
+    });
+    document.addEventListener('keydown', (e)=> {
+      if(e.key === 'Escape') closeDetail();
+    });
+
+    favBtn.addEventListener('click', toggleFav);
+    watchBtn.addEventListener('click', ()=> {
+      // nothing special, link opens in new tab because of target="_blank"
+      // you can add tracking or popup-block prevention here
+    });
+
+    // render initial
+    renderGrid(movies);
+
+    // helpers
+    function escapeHTML(s){ return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m] }); }
+
+    // Preload first poster (improves perceived speed)
+    (function preload(){
+      if(movies[0] && movies[0].img){
+        const i = new Image();
+        i.src = movies[0].img;
+      }
+    })();
+  </script>
+</body>
+</html>

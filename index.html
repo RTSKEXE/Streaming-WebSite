@@ -3,55 +3,49 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mini-Streaming — Catalogue Halloween</title>
-  <meta name="description" content="Catalogue de films — édition Halloween. Cliquez pour voir la fiche et accéder au lien du film.">
-  
+  <title>Mini-Streaming — Catalogue</title>
+  <meta name="description" content="Catalogue de films — cliquez pour voir la fiche et accéder au lien du film.">
+
   <!-- Police Halloween -->
   <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg: #0a0a0a;
-      --card: #1a0a1a;
-      --muted: #d9d9d9;
-      --accent: #FF6B35;
-      --glass: rgba(255,255,255,0.03);
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #9aa4b2;
+      --accent: #ff5c7c;
+      --glass: rgba(255,255,255,0.04);
       --radius: 14px;
       --max-width: 1100px;
       --gutter: 16px;
-      --highlight: #FFC857;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
-      font-family: 'Inter', sans-serif;
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,107,53,0.08), transparent 6%),
-                  linear-gradient(180deg, #0a0a0a 0%, #2B0B3F 100%);
+      font-family: 'Creepster', Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,92,124,0.06), transparent 6%),
+                  linear-gradient(180deg, #051024 0%, #081226 100%);
       color:#e6eef6;
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
       padding:24px;
       display:flex;
       justify-content:center;
-      overflow-x:hidden;
+      position:relative;
     }
 
-    /* Toiles d'araignée animées */
-    body::before{
-      content:"";
+    /* Fond vidéo */
+    #bg-video{
       position:fixed;
-      top:0;left:0;
-      width:100%;height:100%;
-      background-image: url('https://i.ibb.co/rk7T9bP/spider-web.png');
-      background-size: cover;
-      opacity:0.05;
-      pointer-events:none;
-      animation: spin 300s linear infinite;
-    }
-    @keyframes spin{
-      0%{transform:rotate(0deg);}
-      100%{transform:rotate(360deg);}
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      z-index:-1;
+      opacity:0.4;
     }
 
     .app{width:100%;max-width:var(--max-width);}
@@ -68,10 +62,8 @@
       background:linear-gradient(135deg,var(--accent),#7b61ff);
       display:flex;align-items:center;justify-content:center;font-weight:700;color:white;
       box-shadow:0 6px 18px rgba(0,0,0,0.5);
-      font-family: 'Creepster', cursive;
-      font-size:1.2rem;
     }
-    h1{font-size:1.1rem;margin:0; font-family: 'Creepster', cursive; color:var(--highlight);}
+    h1{font-size:1.1rem;margin:0}
     p.sub{margin:0;color:var(--muted);font-size:0.9rem}
     .controls{display:flex;gap:8px;align-items:center}
     .search{
@@ -82,9 +74,7 @@
     }
     .toggle{
       background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:10px;color:var(--muted);
-      transition: all 0.3s ease;
     }
-    .toggle:hover{color:var(--accent);border-color:var(--accent);}
     .grid{
       display:grid;
       grid-template-columns: repeat(3, 1fr);
@@ -92,100 +82,74 @@
     }
     @media (max-width:900px){ .grid{grid-template-columns: repeat(2, 1fr);} }
     @media (max-width:520px){ .grid{grid-template-columns: 1fr;} header{flex-direction:column;align-items:flex-start} }
-    
     .card{
-      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.2));
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       border-radius:var(--radius);
       overflow:hidden;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+      box-shadow: 0 6px 20px rgba(3,8,20,0.6);
       cursor:pointer;
-      transition:transform .3s ease, box-shadow .3s ease;
+      transition:transform .22s ease, box-shadow .22s ease;
       display:flex;flex-direction:column;
       min-height:220px;
-      position:relative;
     }
-    .card:hover{ transform:translateY(-6px); box-shadow: 0 18px 40px rgba(255,107,53,0.5);}
-    
+    .card:hover{ transform:translateY(-6px); box-shadow: 0 18px 40px rgba(3,8,20,0.7);}
     .poster{
       width:100%;
       aspect-ratio: 2/3;
       object-fit:cover;
       display:block;
-      background:linear-gradient(180deg,#2B0B3F,#0a0a0a);
-      border-bottom:1px solid var(--highlight);
+      background:linear-gradient(180deg,#111827,#0b1220);
     }
     .meta{padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .title{font-weight:600;font-size:0.98rem; color:var(--highlight); font-family: 'Creepster', cursive;}
+    .title{font-weight:600;font-size:0.98rem}
     .year{font-size:0.85rem;color:var(--muted)}
-    
-    /* Overlay */
     .overlay{
-      position:fixed;inset:0;background:linear-gradient(180deg, rgba(10,0,10,0.85), rgba(43,11,63,0.95));
+      position:fixed;inset:0;background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.85));
       display:flex;align-items:center;justify-content:center;padding:18px;
       backdrop-filter: blur(6px);
       z-index:60;
-      opacity:0;pointer-events:none;transition:opacity .3s ease;
+      opacity:0;pointer-events:none;transition:opacity .22s ease;
     }
     .overlay.open{opacity:1;pointer-events:auto}
-    
     .detail{
-      width:100%;max-width:900px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.2));
+      width:100%;max-width:900px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       border-radius:18px;padding:16px;display:grid;grid-template-columns: 38% 62%;gap:18px;
-      box-shadow: 0 18px 60px rgba(0,0,0,0.9);
+      box-shadow: 0 18px 60px rgba(2,6,23,0.8);
     }
     @media (max-width:720px){ .detail{grid-template-columns:1fr;align-items:start;padding:12px;} }
-    .detail .poster-lg{width:100%;border-radius:12px;aspect-ratio: 2/3;object-fit:cover; border:2px solid var(--accent);}
-    .detail h2{margin:0 0 6px 0;font-family: 'Creepster', cursive; color:var(--highlight);}
+    .detail .poster-lg{width:100%;border-radius:12px;aspect-ratio: 2/3;object-fit:cover}
+    .detail h2{margin:0 0 6px 0}
     .detail .submeta{color:var(--muted);font-size:0.95rem;margin-bottom:12px}
-    .desc{color:#d9d9d9;line-height:1.45;font-size:0.97rem;margin-bottom:16px}
-    
+    .desc{color:#d4e1f5;line-height:1.45;font-size:0.97rem;margin-bottom:16px}
     .actions{display:flex;gap:12px;align-items:center}
     .btn{
       padding:10px 16px;border-radius:12px;border:0;font-weight:700;cursor:pointer;
-      box-shadow:0 8px 20px rgba(0,0,0,0.7);
-      transition: all 0.3s ease;
+      box-shadow:0 8px 20px rgba(11,18,32,0.6);
     }
     .btn-primary{
       background:linear-gradient(90deg,var(--accent),#7b61ff);
       color:white;
     }
-    .btn-primary:hover{
-      filter: brightness(1.2);
-      box-shadow:0 12px 25px rgba(255,107,53,0.6);
-    }
     .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
-    .btn-ghost:hover{border-color:var(--accent); color:var(--accent);}
-    
     .close-x{margin-left:auto;background:transparent;border:0;color:var(--muted);font-size:18px;cursor:pointer}
-    .tag{background:rgba(255,107,53,0.2);padding:6px 8px;border-radius:8px;font-size:0.85rem;color:var(--highlight)}
+    .tag{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:8px;font-size:0.85rem;color:var(--muted)}
     .empty{color:var(--muted);text-align:center;padding:36px;border-radius:12px;background:rgba(255,255,255,0.02)}
-    
-    /* Chauves-souris animées */
-    .bat{
-      position:absolute;
-      width:24px;height:24px;
-      background-image:url('https://i.ibb.co/6r7Y7y1/bat.png');
-      background-size:contain;
-      background-repeat:no-repeat;
-      animation: fly 8s linear infinite;
-    }
-    @keyframes fly{
-      0%{transform:translate(0,0) rotate(0deg);}
-      25%{transform:translate(200px,-50px) rotate(15deg);}
-      50%{transform:translate(400px,20px) rotate(-15deg);}
-      75%{transform:translate(600px,-40px) rotate(10deg);}
-      100%{transform:translate(800px,10px) rotate(0deg);}
-    }
   </style>
 </head>
 <body>
+
+  <!-- Fond vidéo -->
+  <video autoplay muted loop id="bg-video">
+    <source src="ton_fond_video.mp4" type="video/mp4">
+  </video>
+
   <div class="app" id="app">
     <header>
       <div class="brand">
         <div class="logo">MS</div>
         <div>
           <h1>Mini-Streaming</h1>
-          <p class="sub">Catalogue Halloween — clique sur une affiche pour voir la fiche</p>
+          <p class="sub">Catalogue — clique sur une affiche pour voir la fiche</p>
         </div>
       </div>
       <div class="controls">
@@ -201,7 +165,6 @@
       <div id="empty" class="empty" style="display:none;margin-top:12px">Aucun film trouvé.</div>
     </main>
   </div>
-  
   <div id="overlay" class="overlay" role="dialog" aria-hidden="true">
     <div class="detail" role="document" aria-labelledby="detail-title">
       <img id="detail-poster" class="poster-lg" src="" alt="Affiche du film">
@@ -217,14 +180,7 @@
       </div>
     </div>
   </div>
-
-  <!-- Ajout de chauves-souris flottantes -->
-  <div class="bat" style="top:50px; left:10px;"></div>
-  <div class="bat" style="top:120px; left:50px; animation-delay:2s;"></div>
-  <div class="bat" style="top:200px; left:20px; animation-delay:4s;"></div>
-
   <script>
-    // Ton JS existant reste identique
     const movies = [
       {
         id: 'ACS1',
@@ -258,6 +214,39 @@
         img: './AcontreSensLD.jpg',
         desc: "A contre sens : Londres suit Eden qui demenage a Londres avec sa mere. Elle rencontre Nick, son demi-frere, et une attraction nait, pesee par les secrets de leur famille et les conflits de coeur.",
         url:  'https://sharecloudy.com/iframe/lr8v4ykQ3w'
+      },
+      {
+         id: 'ACS3',
+         title: 'À Contre-Sens 3',
+         year: 2025,
+         duration: '1h50',
+         genre: 'Romance/Drame',
+         rating: 'N/A',
+         img: './AcontreSens3.jpg',
+         desc: "A contre sens 3 conclut la trilogie en suivant Noah et Nick qui se retrouvent apres une longue separation lors du mariage de leurs amis Jenna et Lion. L attirance entre eux refait surface mais de nouveaux secrets et blessures menacent a nouveau leur amour. Entre passion et regret, ils devront choisir entre le passe et un avenir encore possible.",
+         url: 'https://sharecloudy.com/iframe/xk49MXR23J'
+      },
+      {
+         id: 'MC',
+         title: 'Minecraft Movie',
+         year: 2025,
+         duration: '1h41',
+         genre: 'Aventure / Fantastique',
+         rating: 'N/A',
+         img: './MC.jpg',
+         desc: "Dans un monde inspire du jeu culte Minecraft un groupe de heros doit proteger leur univers du terrible Ender Dragon. Ensemble ils apprennent a construire a survivre et a unir leurs forces pour sauver le monde cubique avant qu il ne soit detruit.",
+         url: 'https://sharecloudy.com/iframe/pmbzgK4Q2G'
+      },
+      {
+         id: 'SE',
+         title: 'Sous Écrous',
+         year: 2024,
+         duration: '1h51',
+         genre: 'Comédie / Action',
+         rating: '4.8',
+         img: './SE.jpg',
+         desc: "Sami, un jeune homme naive, se retrouve en prison pour la premiere fois. Il y rencontre Nada, un caïd autoproclamé, et ensemble ils naviguent dans l'univers carcéral, entre alliances improbables et situations burlesques.",
+         url: 'https://sharecloudy.com/iframe/tHt61YaPJR'
       }
     ];
 
@@ -353,7 +342,7 @@
 
     searchInput.addEventListener('input', (e)=>{
       const q = e.target.value.trim().toLowerCase();
-      const result =       movies.filter(m => (m.title + ' ' + m.genre + ' ' + m.year).toLowerCase().includes(q));
+      const result = movies.filter(m => (m.title + ' ' + m.genre + ' ' + m.year).toLowerCase().includes(q));
       renderGrid(result);
     });
 
@@ -375,11 +364,7 @@
 
     renderGrid(movies);
 
-    function escapeHTML(s){ 
-      return String(s).replace(/[&<>"']/g, function(m){ 
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m] 
-      }); 
-    }
+    function escapeHTML(s){ return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m] }); }
   </script>
 </body>
 </html>
